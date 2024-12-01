@@ -1,29 +1,46 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { auth } from './ApiFirebase';
-import { signInWithEmailAndPassword } from 'firebase/auth'; 
+import { auth } from './ApiFirebase.js'; 
+import { createUserWithEmailAndPassword } from 'firebase/auth'; 
 
-export default function LoginScreen({ navigation }) {
+export default function SignUpScreen({ navigation }) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleLogin = async () => {
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log('Usuario autenticado:', user);
-      Alert.alert('¡Éxito!', 'Inicio de sesión exitoso');
-      navigation.navigate('Home');
+
+      console.log('Usuario creado:', user);
+
+      Alert.alert('¡Éxito!', 'Usuario registrado correctamente');
+      navigation.navigate('Home'); 
     } catch (error) {
-      console.error('Error al iniciar sesión:', error.message);
+      console.error('Error al registrar:', error.message);
       Alert.alert('Error', error.message);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.welcomeText}>WELCOME BACK</Text>
-      <Text style={styles.subtitle}>Log In to continue</Text>
+      <Text style={styles.welcomeText}>CREATE ACCOUNT</Text>
+      <Text style={styles.subtitle}>Sign up to get started</Text>
+
+      <Text style={styles.label}>Name</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Name"
+        value={name}
+        onChangeText={setName}
+      />
 
       <Text style={styles.label}>Email</Text>
       <TextInput
@@ -43,21 +60,21 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>Log In</Text>
+      <Text style={styles.label}>Confirm Password</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+
+      <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
+        <Text style={styles.signUpButtonText}>Sign Up</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity>
-        <Text style={styles.forgotPassword}>Forgot password</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.noAccountText}>Don’t have an account?</Text>
-
-      <TouchableOpacity
-        style={styles.createAccountButton}
-        onPress={() => navigation.navigate('SignUp')}
-      >
-        <Text style={styles.createAccountButtonText}>Create an account</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.alreadyHaveAccount}>Already have an account? Log In</Text>
       </TouchableOpacity>
     </View>
   );
@@ -98,7 +115,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#fff',
   },
-  loginButton: {
+  signUpButton: {
     width: '90%',
     height: 40,
     backgroundColor: '#000',
@@ -107,32 +124,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 10,
   },
-  loginButtonText: {
+  signUpButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
-  forgotPassword: {
+  alreadyHaveAccount: {
     fontSize: 14,
     textDecorationLine: 'underline',
     color: '#000',
-    marginBottom: 20,
-  },
-  noAccountText: {
-    fontSize: 14,
-    marginBottom: 10,
-  },
-  createAccountButton: {
-    width: '90%',
-    height: 40,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 20,
-  },
-  createAccountButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
+    marginTop: 20,
   },
 });

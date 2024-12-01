@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function HomeView() {
+export default function HomeView({ navigation }) {
   const [search, setSearch] = useState('');
-  
+  const [favorites, setFavorites] = useState([]);
+
   const recommendations = [
     { id: '1', name: 'Pet', icon: '🐾', rating: 5 },
     { id: '2', name: 'Milk', icon: '🥛', rating: 4 },
@@ -19,16 +21,64 @@ export default function HomeView() {
     { id: '12', name: 'Bread', icon: '🍞', rating: 4 },
   ];
 
-  const renderRecommendation = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.icon}>{item.icon}</Text>
-      <Text style={styles.cardText}>{item.name}</Text>
-      <Text style={styles.rating}>{"⭐".repeat(item.rating)}</Text>
-      <TouchableOpacity style={styles.favoriteButton}>
-        <Text style={styles.heart}>❤️</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  // Cargar favoritos al iniciar la aplicación
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        const storedFavorites = await AsyncStorage.getItem('favorites');
+        if (storedFavorites) {
+          setFavorites(JSON.parse(storedFavorites));
+        }
+      } catch (error) {
+        console.error('Error al cargar favoritos:', error);
+      }
+    };
+
+    loadFavorites();
+  }, []);
+
+  // Guardar favoritos cuando cambian
+  useEffect(() => {
+    const saveFavorites = async () => {
+      try {
+        await AsyncStorage.setItem('favorites', JSON.stringify(favorites));
+      } catch (error) {
+        console.error('Error al guardar favoritos:', error);
+      }
+    };
+
+    saveFavorites();
+  }, [favorites]);
+
+  const toggleFavorite = (item) => {
+    setFavorites((prevFavorites) => {
+      if (prevFavorites.some((fav) => fav.id === item.id)) {
+        // Si ya está en favoritos, lo quitamos
+        return prevFavorites.filter((fav) => fav.id !== item.id);
+      } else {
+        // Si no está, lo agregamos
+        return [...prevFavorites, item];
+      }
+    });
+  };
+
+  const renderRecommendation = ({ item }) => {
+    const isFavorite = favorites.some((fav) => fav.id === item.id); // Verificar si el item está en favoritos
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.icon}>{item.icon}</Text>
+        <Text style={styles.cardText}>{item.name}</Text>
+        <Text style={styles.rating}>{"⭐".repeat(item.rating)}</Text>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(item)} // Alternar favorito
+        >
+          <Text style={styles.heart}>{isFavorite ? '❤️' : '🤍'}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -50,7 +100,7 @@ export default function HomeView() {
       />
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('OptionsView')}>
           <Text style={styles.navIcon}>⚙️</Text>
         </TouchableOpacity>
         <TouchableOpacity>
@@ -59,7 +109,7 @@ export default function HomeView() {
         <TouchableOpacity>
           <Text style={styles.navIcon}>🛒</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
           <Text style={styles.navIcon}>👤</Text>
         </TouchableOpacity>
       </View>
@@ -128,7 +178,6 @@ const styles = StyleSheet.create({
   },
   heart: {
     fontSize: 16,
-    color: 'red',
   },
   bottomNav: {
     flexDirection: 'row',
