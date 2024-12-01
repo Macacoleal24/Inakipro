@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchProducts } from './Products_API'; // Importar función para obtener productos dinámicos
+import { fetchProducts } from './Products_API';
 
 export default function HomeView({ navigation }) {
   const [search, setSearch] = useState('');
@@ -9,11 +9,10 @@ export default function HomeView({ navigation }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Cargar productos desde la API
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const data = await fetchProducts(); // Obtener productos desde la API
+        const data = await fetchProducts();
         setProducts(data);
       } catch (error) {
         console.error('Error al cargar productos:', error);
@@ -25,7 +24,6 @@ export default function HomeView({ navigation }) {
     loadProducts();
   }, []);
 
-  // Cargar favoritos al iniciar la aplicación
   useEffect(() => {
     const loadFavorites = async () => {
       try {
@@ -41,7 +39,6 @@ export default function HomeView({ navigation }) {
     loadFavorites();
   }, []);
 
-  // Guardar favoritos cuando cambian
   useEffect(() => {
     const saveFavorites = async () => {
       try {
@@ -57,9 +54,9 @@ export default function HomeView({ navigation }) {
   const toggleFavorite = (item) => {
     setFavorites((prevFavorites) => {
       if (prevFavorites.some((fav) => fav.id === item.id)) {
-        return prevFavorites.filter((fav) => fav.id !== item.id); // Si ya está, lo eliminamos
+        return prevFavorites.filter((fav) => fav.id !== item.id);
       } else {
-        return [...prevFavorites, item]; // Si no está, lo agregamos
+        return [...prevFavorites, item];
       }
     });
   };
