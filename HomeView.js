@@ -1,25 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchProducts } from './Products_API'; // Importar función para obtener productos dinámicos
 
 export default function HomeView({ navigation }) {
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const recommendations = [
-    { id: '1', name: 'Pet', icon: '🐾', rating: 5 },
-    { id: '2', name: 'Milk', icon: '🥛', rating: 4 },
-    { id: '3', name: 'Alcohol', icon: '🍷', rating: 5 },
-    { id: '4', name: 'Candy', icon: '🍬', rating: 4 },
-    { id: '5', name: 'Food', icon: '🍽️', rating: 5 },
-    { id: '6', name: 'Egg', icon: '🥚', rating: 4 },
-    { id: '7', name: 'Electronic', icon: '💻', rating: 5 },
-    { id: '8', name: 'Cereal', icon: '🥣', rating: 4 },
-    { id: '9', name: 'Electrodomestics', icon: '📺', rating: 4 },
-    { id: '10', name: 'Clean', icon: '🧹', rating: 5 },
-    { id: '11', name: 'Fruit', icon: '🍎', rating: 5 },
-    { id: '12', name: 'Bread', icon: '🍞', rating: 4 },
-  ];
+  // Cargar productos desde la API
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const data = await fetchProducts(); // Obtener productos desde la API
+        setProducts(data);
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   // Cargar favoritos al iniciar la aplicación
   useEffect(() => {
@@ -53,26 +57,24 @@ export default function HomeView({ navigation }) {
   const toggleFavorite = (item) => {
     setFavorites((prevFavorites) => {
       if (prevFavorites.some((fav) => fav.id === item.id)) {
-        // Si ya está en favoritos, lo quitamos
-        return prevFavorites.filter((fav) => fav.id !== item.id);
+        return prevFavorites.filter((fav) => fav.id !== item.id); // Si ya está, lo eliminamos
       } else {
-        // Si no está, lo agregamos
-        return [...prevFavorites, item];
+        return [...prevFavorites, item]; // Si no está, lo agregamos
       }
     });
   };
 
   const renderRecommendation = ({ item }) => {
-    const isFavorite = favorites.some((fav) => fav.id === item.id); // Verificar si el item está en favoritos
+    const isFavorite = favorites.some((fav) => fav.id === item.id);
 
     return (
       <View style={styles.card}>
-        <Text style={styles.icon}>{item.icon}</Text>
-        <Text style={styles.cardText}>{item.name}</Text>
-        <Text style={styles.rating}>{"⭐".repeat(item.rating)}</Text>
+        <Image source={{ uri: item.image }} style={styles.productImage} />
+        <Text style={styles.cardText}>{item.title}</Text>
+        <Text style={styles.cardPrice}>${item.price.toFixed(2)}</Text>
         <TouchableOpacity
           style={styles.favoriteButton}
-          onPress={() => toggleFavorite(item)} // Alternar favorito
+          onPress={() => toggleFavorite(item)}
         >
           <Text style={styles.heart}>{isFavorite ? '❤️' : '🤍'}</Text>
         </TouchableOpacity>
@@ -80,22 +82,28 @@ export default function HomeView({ navigation }) {
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading products...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Personalized Recommendations</Text>
+      <Text style={styles.title}>Product Recommendations</Text>
       <TextInput
         style={styles.searchInput}
         placeholder="Search"
         value={search}
         onChangeText={setSearch}
       />
-
-      <Text style={styles.subtitle}>Based on your history</Text>
       <FlatList
-        data={recommendations}
+        data={products}
         renderItem={renderRecommendation}
-        keyExtractor={(item) => item.id}
-        numColumns={3}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2}
         contentContainerStyle={styles.list}
       />
 
@@ -137,47 +145,36 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: '#fff',
   },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 15,
-  },
-  list: {
-    alignItems: 'center',
-  },
   card: {
-    width: 100,
-    height: 120,
+    flex: 1,
+    alignItems: 'center',
+    padding: 10,
+    margin: 5,
     backgroundColor: '#fff',
     borderRadius: 10,
-    margin: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
-    position: 'relative',
   },
-  icon: {
-    fontSize: 30,
+  productImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
     marginBottom: 10,
   },
   cardText: {
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'center',
+    marginBottom: 5,
   },
-  rating: {
-    fontSize: 12,
-    marginTop: 5,
+  cardPrice: {
+    fontSize: 14,
+    fontWeight: 'bold',
     color: '#555',
-  },
-  favoriteButton: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
   },
   heart: {
     fontSize: 16,
+    marginTop: 5,
   },
   bottomNav: {
     flexDirection: 'row',

@@ -6,8 +6,14 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -22,7 +28,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.welcomeText}>WELCOME BACK</Text>
+      <Text style={styles.welcomeText}>WELCOME</Text>
       <Text style={styles.subtitle}>Log In to continue</Text>
 
       <Text style={styles.label}>Email</Text>
@@ -35,20 +41,25 @@ export default function LoginScreen({ navigation }) {
       />
 
       <Text style={styles.label}>Password</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.inputField}
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <Text style={styles.showPasswordText}>{showPassword ? 'Hide' : 'Show'}</Text>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>Log In</Text>
       </TouchableOpacity>
 
       <TouchableOpacity>
-        <Text style={styles.forgotPassword}>Forgot password</Text>
+        <Text style={styles.forgotPassword}>Forgot password?</Text>
       </TouchableOpacity>
 
       <Text style={styles.noAccountText}>Don’t have an account?</Text>
@@ -72,67 +83,92 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   welcomeText: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 15,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     marginBottom: 30,
     textAlign: 'center',
+    color: '#555',
   },
   label: {
     alignSelf: 'flex-start',
     fontSize: 16,
     marginBottom: 5,
     marginLeft: '5%',
+    color: '#333',
   },
   input: {
     width: '90%',
-    height: 40,
-    borderColor: '#000',
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 10,
     paddingHorizontal: 15,
     marginBottom: 15,
     backgroundColor: '#fff',
+    fontSize: 16,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '90%',
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    paddingHorizontal: 15,
+    marginBottom: 20,
+  },
+  inputField: {
+    flex: 1,
+    fontSize: 16,
+  },
+  showPasswordText: {
+    color: '#007BFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   loginButton: {
     width: '90%',
-    height: 40,
+    height: 50,
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
-    marginBottom: 10,
+    borderRadius: 10,
+    marginBottom: 20,
   },
   loginButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
   },
   forgotPassword: {
     fontSize: 14,
+    color: '#007BFF',
     textDecorationLine: 'underline',
-    color: '#000',
     marginBottom: 20,
   },
   noAccountText: {
     fontSize: 14,
     marginBottom: 10,
+    color: '#333',
   },
   createAccountButton: {
     width: '90%',
-    height: 40,
-    backgroundColor: '#000',
+    height: 50,
+    backgroundColor: '#007BFF',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
+    borderRadius: 10,
   },
   createAccountButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
   },
 });

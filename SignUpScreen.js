@@ -8,10 +8,17 @@ export default function SignUpScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSignUp = async () => {
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
@@ -19,12 +26,12 @@ export default function SignUpScreen({ navigation }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      console.log('Usuario creado:', user);
+      console.log('User created:', user);
 
-      Alert.alert('¡Éxito!', 'Usuario registrado correctamente');
+      Alert.alert('Success!', 'User registered successfully');
       navigation.navigate('Home'); 
     } catch (error) {
-      console.error('Error al registrar:', error.message);
+      console.error('Error registering user:', error.message);
       Alert.alert('Error', error.message);
     }
   };
@@ -52,22 +59,32 @@ export default function SignUpScreen({ navigation }) {
       />
 
       <Text style={styles.label}>Password</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.inputField}
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <Text style={styles.showPasswordText}>{showPassword ? 'Hide' : 'Show'}</Text>
+        </TouchableOpacity>
+      </View>
 
       <Text style={styles.label}>Confirm Password</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          style={styles.inputField}
+          placeholder="Confirm Password"
+          secureTextEntry={!showConfirmPassword}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
+        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+          <Text style={styles.showPasswordText}>{showConfirmPassword ? 'Hide' : 'Show'}</Text>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
         <Text style={styles.signUpButtonText}>Sign Up</Text>
@@ -91,48 +108,72 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 30,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 15,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     marginBottom: 30,
     textAlign: 'center',
+    color: '#555',
   },
   label: {
     alignSelf: 'flex-start',
     fontSize: 16,
     marginBottom: 5,
     marginLeft: '5%',
+    color: '#333',
   },
   input: {
     width: '90%',
-    height: 40,
-    borderColor: '#000',
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 10,
     paddingHorizontal: 15,
-    marginBottom: 15,
+    marginBottom: 20,
     backgroundColor: '#fff',
+    fontSize: 16,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '90%',
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    paddingHorizontal: 15,
+    marginBottom: 20,
+  },
+  inputField: {
+    flex: 1,
+    fontSize: 16,
+  },
+  showPasswordText: {
+    color: '#007BFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   signUpButton: {
     width: '90%',
-    height: 40,
+    height: 50,
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 20,
-    marginBottom: 10,
+    borderRadius: 10,
+    marginBottom: 20,
   },
   signUpButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 18,
   },
   alreadyHaveAccount: {
     fontSize: 14,
     textDecorationLine: 'underline',
-    color: '#000',
+    color: '#007BFF',
     marginTop: 20,
   },
 });
